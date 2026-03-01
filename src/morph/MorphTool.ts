@@ -6,6 +6,7 @@
 // no drag-to-resize since morph shapes are sized by
 // the semantic zoom slider).
 //
+// Places a new person card with default values.
 // Keyboard shortcut: M
 // ─────────────────────────────────────────────────
 
@@ -36,8 +37,12 @@ export class MorphTool extends StateNode {
       props: {
         w: config.w,
         h: config.h,
-        title: 'New Note',
-        body: '',
+        name: 'New Person',
+        role: '',
+        info: '',
+        bio: '',
+        avatarUrl: '',
+        color: '#4ade80',
       },
     })
     this.editor.select(id)

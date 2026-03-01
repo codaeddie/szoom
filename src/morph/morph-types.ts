@@ -1,8 +1,12 @@
-import { TLShape, TLShapeId } from 'tldraw'
-
 // ─────────────────────────────────────────────────
 // MORPH SHAPE TYPE DEFINITION
+//
+// Person card shape for family/social graphs.
+// Props: name, role, info, bio, avatarUrl, color.
+// Renders progressively across 4 semantic zoom phases.
 // ─────────────────────────────────────────────────
+
+import { TLShape, TLShapeId } from 'tldraw'
 
 export const MORPH_TYPE = 'morph' as const
 
@@ -17,8 +21,12 @@ export type MorphShape = TLShape<typeof MORPH_TYPE>
 export interface MorphShapeProps {
   w: number
   h: number
-  title: string
-  body: string
+  name: string          // always present — rendered at every phase
+  role: string          // "Son" / "Mother" / "Uncle"
+  info: string          // short line — "Makdesi & Coda Family"
+  bio: string           // full paragraph for Document phase
+  avatarUrl: string     // image URL or empty string (reserved for future use)
+  color: string         // hex color for initials circle bg — e.g. '#9C27B0'
 }
 
 // ─────────────────────────────────────────────────
@@ -47,12 +55,18 @@ export interface PhaseConfig {
 
 // ─────────────────────────────────────────────────
 // GRAPH TYPES — for webcola integration
+//
+// GraphNode: data model for each person in the graph.
+// GraphEdge: directed connection between two nodes.
 // ─────────────────────────────────────────────────
 
 export interface GraphNode {
   id: string
-  title: string
-  body: string
+  name: string
+  role: string
+  info: string
+  bio: string
+  color: string
   x: number
   y: number
 }

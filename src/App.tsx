@@ -96,6 +96,12 @@ export default function App() {
   const handleMount = useCallback((editor: Editor) => {
     editorRef.current = editor
 
+    // Clear stale persisted shapes (old schema had title/body, new has name/role/etc)
+    const existing = editor.getCurrentPageShapes()
+    if (existing.length > 0) {
+      editor.deleteShapes(existing.map((s) => s.id))
+    }
+
     // Create the graph layout manager
     graphRef.current = new GraphLayout(editor)
 
@@ -108,8 +114,12 @@ export default function App() {
       props: {
         w: 200,
         h: 32,
-        title: node.title,
-        body: node.body,
+        name: node.name,
+        role: node.role,
+        info: node.info,
+        bio: node.bio,
+        avatarUrl: '',
+        color: node.color,
       },
     }))
 

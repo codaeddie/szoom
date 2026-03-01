@@ -16,17 +16,18 @@
      move them there with context about why they were deferred.
   6. This doc is for agents AND humans. Write concisely but don't assume context.
      A new reader should be able to understand the project state in one pass.
--->
+     -->
 
 ## How to Implement Semantic Zoom in tldraw
 
 #### Reverse Engineering based on Orion Reed description: 
 
-> I've been calling these kind of like visual semantic morphisms or semantic zoom which is a kind of transformation where you're preserving the semantics throughout uh. Imagine that this is your like obsidian graph view uh and we want to go into graph mode uh we can transition between a purely kind of point base graph layout (`level0.png`) and one with labels (`level20.png`) where we have little information uh still more than the point but but in this case the the semantics here that the label is inside um because we want it to persist that that kind of encoding of the semantics to other views like we can go to this kind of mini note (`level80.png`) view uh and make these editable maybe I didn't um but you could for example see a bunch of notes kind of clustered together and and edit them and then of course if you wanted to you could go to one that's close to full screen (`level100.png`) um so this was just to illustrate that it's it's conceivable that in in a world where we have more of our UI in the same environment that it could be uh it it could be a kind of uh a patchwork collage of different things where you have your email client of choice next to your tree view thing of choice for whatever purpose and you have your all of the stuff together kind with all of its own visual
+> I've been calling these kind of like visual semantic morphisms or semantic zoom which is a kind of transformation where you're preserving the semantics throughout uh. Imagine that this is your like obsidian graph view uh and we want to go into graph mode uh we can transition between a purely kind of point base graph layout and one with labels where we have little information uh still more than the point but but in this case the the semantics here that the label is inside um because we want it to persist that that kind of encoding of the semantics to other views like we can go to this kind of mini note view uh and make these editable maybe I didn't um but you could for example see a bunch of notes kind of clustered together and and edit them and then of course if you wanted to you could go to one that's close to full screen um so this was just to illustrate that it's it's conceivable that in in a world where we have more of our UI in the same environment that it could be uh it it could be a kind of uh a patchwork collage of different things where you have your email client of choice next to your tree view thing of choice for whatever purpose and you have your all of the stuff together kind with all of its own visual
 
-#### Detailed Image Descriptions per Morph Level:
+#### Detail Morph Level:
 
-**`level0.png` — Phase 0: Dot (value: 0.00)**
+**Phase 0: Dot (value: 0.00)**
+
 - 8 solid black filled circles (~30-40px diameter) arranged in a force-directed graph layout
 - Dark navy/black directed arrows connect between dots — arrows have pointed heads
 - No text, no labels — pure topology. Constellation-like appearance
@@ -37,7 +38,8 @@
 - Camera zoom: 73%. "Graph" toggle button at top center. Standard tldraw toolbar at bottom
 - Right panel shows tldraw style options: colors (blue selected), fill styles, geo shapes (circle selected), sizes S/M/L/XL
 
-**`level20.png` — Phase 1: Label (value: 0.20)**
+**Phase 1: Label (value: 0.20)**
+
 - Dots have SNAPPED (not faded) to dark rounded rectangles containing white monospace bold title text
 - Labels: "ex tempor", "dolor ipsum", "laborum ad aute duis", "dolore excepteur", "culpa tempor", "do aliqua consectetur", "excepteur occaecat", "consectetur id excepteur ullamco"
 - Shapes are ~160-250px wide × ~32px tall (single-line labels with padding)
@@ -49,7 +51,8 @@
 - Status bar: `select.idle`
 - Slider reads `0.20` with green bar
 
-**`level80.png` — Phase 2: Card / Mini-Note (value: 0.80)**
+**Phase 2: Card / Mini-Note (value: 0.80)**
+
 - Labels have SNAPPED to expanded card views with title + body text
 - Cards are ~350-450px wide × ~200-350px tall
 - Dark background, monospace font throughout
@@ -63,7 +66,8 @@
 - Slider reads `0.80` with green + yellow bars
 - Camera still locked at 73%
 
-**`level100.png` — Phase 3: Full Note / Document (value: 1.00)**
+**Phase 3: Full Note / Document (value: 1.00)**
+
 - "laborum ad aute duis" has expanded to ~850x700px — nearly fills the viewport
 - Full document view: title at top (~18px bold), then body text (~13px, line-height 1.7)
 - Body text is multiple paragraphs of lorem ipsum, fully readable
@@ -107,17 +111,6 @@
 // - 8px border-radius
 ```
 
-
-
-#### Notes:
-
-- Custom Zoom Controller on bottom right {0, 20, 80, 100}
-- Avoids smooth morphing between phases (rapid morphs once passing the scroll value)
-- tldraw camera zoom stays locked at 73% during the "morphs" 
-- Morphing or transitions beautifully jump to the next state (not continuous fade) 
-- DAG, Force-directed graph 
-    - see `C:\Users\eddie\Desktop\errata\szoom\tldraw-graph-layout` for implementation details (NOTE THIS USES AN OLD VERSION OF TLDRAW)
-
 ---
 
 #### Tldraw Documentation Reference:
@@ -125,6 +118,7 @@
 **Version:** tldraw v4.4.0 (latest as of Feb 2026). Import from `tldraw` not `@tldraw/tldraw`.
 
 **Custom Shapes (modern API):**
+
 - Use module augmentation: `declare module 'tldraw' { interface TLGlobalShapePropsMap { ... } }`
 - Shape type: `TLShape<'morph'>` 
 - Props validated with `T.number`, `T.string` from `tldraw`
@@ -146,12 +140,14 @@
 - Docs: https://tldraw.dev/reference/store/StoreSideEffects
 
 **UI Customization:**
+
 - `TLComponents` prop: `InFrontOfTheCanvas`, `OnTheCanvas`, `Toolbar`, etc.
 - `DefaultToolbar` component can be overridden or augmented
 - `TLUiOverrides` for keyboard shortcuts and actions
 - Docs: https://tldraw.dev/docs/user-interface
 
 **Editor API (key methods):**
+
 - `editor.createShapes([...])`, `editor.updateShapes([...])`, `editor.deleteShapes([...])`
 - `editor.getCurrentPageShapes()` — all shapes on current page
 - `editor.getSelectedShapeIds()` — current selection
@@ -162,14 +158,12 @@
 - Docs: https://tldraw.dev/reference/editor/Editor
 
 **Camera Control:**
+
 - `editor.setCameraOptions({ isLocked: true })` — lock camera
 - `editor.setCamera({ x, y, z })` — z controls zoom (0.73 = 73%)
 
-
-
 #### Force-Directed Graph Implementation:
 
-**Original (Orion's beta.2 version):**
 - Uses `webcola` (`Layout` class from `webcola` npm package) for constraint-based force-directed layout
 - `BaseCollection` pattern: abstract class managing a set of shapes with lifecycle hooks (`onAdd`, `onRemove`, `onShapeChange`)
 - `CollectionProvider`: React context that bridges tldraw's store changes to collection instances
@@ -183,13 +177,15 @@
   - `avoidOverlaps(true)` + `handleDisconnected(true)` on the cola simulation
 
 **Modernization for tldraw v4.x:**
+
 - Replace `store.onAfterChange` / `store.onAfterDelete` with `editor.sideEffects.registerAfterChangeHandler` / `registerAfterDeleteHandler`
 - Arrow bindings: old API used `arrow.props.start.type === 'binding'` and `arrow.props.start.boundShapeId`. New API uses `editor.getBindingsFromShape(arrowId)` or check `editor.getBindingsToShape(shapeId)`
 - The `BaseCollection` pattern itself is framework-level and can be kept largely intact, just update the tldraw API calls inside it
-- Shape type changes: `TLGeoShape` props access is the same, but type imports come from `tldraw` not `@tldraw/tldraw`
+- Shape type changes: `tldraw` is EXTREMELY OPINIONATED ABOUT FUCKING SHPAES BRO
 - The `webcola` library itself is unchanged — it's a standalone layout engine
 
 **Key webcola configuration from original:**
+
 ```ts
 this.graphSim
   .nodes(nodes)
@@ -201,21 +197,18 @@ this.graphSim
 ```
 
 **Integration with semantic zoom:**
+
 - When morph level changes, ALL morph shapes resize simultaneously
 - Cola simulation receives updated `width`/`height` for each node
 - `avoidOverlaps(true)` causes simulation to push nodes apart as they grow
 - This is what creates the organic spreading seen in level20→level80→level100
 - The sim loop (`requestAnimationFrame`) handles the animated repositioning
 
-
-
 #### Implementation Scaffold:
 
 ```
 szoom/
 ├── CLAUDE.md                          # This file
-├── level0.png ... level100.png        # Reference images
-├── tldraw-graph-layout/               # Orion's original (READ-ONLY reference)
 └── src/
     ├── main.tsx                        # React entry point
     ├── App.tsx                         # Tldraw mount + wiring
@@ -235,10 +228,11 @@ szoom/
     ├── engine/
     │   └── semantic-zoom.ts           # Phase logic: reads slider value, batch-updates all morph shapes
     └── data/
-        └── sample-graph.ts            # 8 sample nodes + edges matching Orion's demo
+        └── sample-graph.ts            # 8 sample nodes 
 ```
 
 **Implementation order:**
+
 1. Project scaffold (Vite + React + tldraw v4.4.0 + webcola)
 2. `morph-types.ts` + `morph-phases.ts` — type system and phase dimensions
 3. `MorphShapeUtil.tsx` — custom shape that renders 4 discrete modes based on current phase
@@ -248,8 +242,6 @@ szoom/
 7. `GraphCollection.ts` + `CollectionProvider.tsx` — modernized webcola force-directed layout
 8. `GraphToggle.tsx` + `ui-overrides.ts` — Graph mode toggle and keyboard shortcut
 9. Integration testing — verify all 4 phases match reference images
-
-
 
 #### Testing Benchmarks:
 
@@ -292,8 +284,6 @@ szoom/
 - [x] Test drag interaction during active force simulation (confirmed working)
 - [x] Add morph shape tool to toolbar + M key shortcut (MorphTool.ts, toolbar override in App.tsx)
 - [ ] Reactive graph layer (GraphCollection + sideEffects — add/remove nodes at runtime)
-- [ ] Tune phase dimensions to match Orion's demo pixel-for-pixel
-- [ ] Polish: edge cases, persistence cleanup
 
 ### Resolved Issues (2026-03-01):
 
