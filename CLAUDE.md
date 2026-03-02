@@ -309,6 +309,10 @@ szoom/
   - Key learning: `DefaultToolbar` accepts children prop — pass `<DefaultToolbarContent />` plus custom items to extend without replacing.
   - Returns to select tool after placement unless tool lock is active (`editor.getInstanceState().isToolLocked`)
 
+### Key Learnings (tldraw v4.4.0):
+
+- **Wrap shape components in `track()` to capture signal reads.** If `MorphComponent` reads editor signals like `getEditingShapeId()` or `getDetailLevel()`, those are signia signal reads. tldraw's shape component system re-renders when shape *props* change, but external signals (editing state, document meta) require `track()` to be captured. Pattern: `const MorphComponent = track(function MorphComponent({ shape }) { ... })`. The workflow starter kit uses `useValue()` for similar external-state reads. Without `track()`, editing state changes won't trigger re-renders.
+
 ### Backlog (deferred, not blocked):
 
 - **Camera lock at 73%** — cosmetic polish, not functionally needed. Would use `setCameraOptions({ isLocked: true })` + `setCamera({ z: 0.73 })`

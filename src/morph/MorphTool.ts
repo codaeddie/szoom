@@ -1,16 +1,16 @@
 // ─────────────────────────────────────────────────
-// MORPH TOOL
+// MORPH TOOL — ProNet Contractor Card Placement
 //
-// Custom tool for placing morph shapes on the canvas.
-// Follows the StickerTool pattern (simple click-to-place,
+// Custom tool for placing contractor card shapes on
+// the canvas. Click-to-place pattern (StickerTool),
 // no drag-to-resize since morph shapes are sized by
-// the semantic zoom slider).
+// the semantic zoom slider.
 //
 // Keyboard shortcut: M
 // ─────────────────────────────────────────────────
 
 import { StateNode, createShapeId } from 'tldraw'
-import { MORPH_TYPE } from './morph-types'
+import { MORPH_TYPE, DEFAULT_TRADE_COLOR } from './morph-types'
 import { getPhaseConfig } from './morph-phases'
 import { getDetailLevel } from '../engine/semantic-zoom'
 
@@ -36,8 +36,13 @@ export class MorphTool extends StateNode {
       props: {
         w: config.w,
         h: config.h,
-        title: 'New Note',
-        body: '',
+        name: 'New Contractor',
+        company: '',
+        license: '',
+        trades: [],
+        areas: [],
+        phone: '',
+        color: DEFAULT_TRADE_COLOR,
       },
     })
     this.editor.select(id)

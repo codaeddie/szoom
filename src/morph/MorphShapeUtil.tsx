@@ -1,3 +1,20 @@
+// ─────────────────────────────────────────────────
+// MORPH SHAPE UTIL — ProNet Contractor Cards
+//
+// Custom ShapeUtil rendering contractor business cards
+// across 4 discrete semantic zoom phases:
+//   Phase 0 (Dot):     Trade-colored initial circle
+//   Phase 1 (Label):   Name + company strip with accent bar
+//   Phase 2 (Card):    Business card with trades/areas/license
+//   Phase 3 (Document): Full profile with tel: link + editing
+//
+// Patterns from tldraw examples:
+//   - HTMLContainer as root wrapper (custom-shape example)
+//   - pointerEvents + stopPropagation (interactive-shape)
+//   - canEdit + isEditing conditional (editable-shape)
+//   - track() wrapper for signal reads (workflow starter kit)
+// ─────────────────────────────────────────────────
+
 import {
   Geometry2d,
   HTMLContainer,
@@ -7,13 +24,14 @@ import {
   ShapeUtil,
   T,
   useEditor,
+  track,
 } from 'tldraw'
-import { MORPH_TYPE, MorphShape, MorphShapeProps, MorphPhase } from './morph-types'
+import { MORPH_TYPE, MorphShape, MorphShapeProps, MorphPhase, getTradeColor } from './morph-types'
 import { getPhaseFromLevel } from './morph-phases'
 import { getDetailLevel } from '../engine/semantic-zoom'
 
 // ─────────────────────────────────────────────────
-// MORPH SHAPE UTIL
+// SHAPE UTIL CLASS
 // ─────────────────────────────────────────────────
 
 export class MorphShapeUtil extends ShapeUtil<MorphShape> {
@@ -22,16 +40,26 @@ export class MorphShapeUtil extends ShapeUtil<MorphShape> {
   static override props: RecordProps<MorphShape> = {
     w: T.number,
     h: T.number,
-    title: T.string,
-    body: T.string,
+    name: T.string,
+    company: T.string,
+    license: T.string,
+    trades: T.arrayOf(T.string),
+    areas: T.arrayOf(T.string),
+    phone: T.string,
+    color: T.string,
   }
 
   getDefaultProps(): MorphShapeProps {
     return {
-      w: 200,
+      w: 240,
       h: 32,
-      title: 'Untitled',
-      body: 'Lorem ipsum dolor sit amet.',
+      name: 'New Contractor',
+      company: '',
+      license: '',
+      trades: [],
+      areas: [],
+      phone: '',
+      color: '#6b7280',
     }
   }
 
@@ -90,24 +118,27 @@ export class MorphShapeUtil extends ShapeUtil<MorphShape> {
 }
 
 // ─────────────────────────────────────────────────
-// MORPH COMPONENT — Discrete phase rendering
-//
-// No fading, no interpolation between phases.
-// Each phase is a completely different render.
-// "morphing or transitions beautifully jump
-//  to the next state (not continuous fade)"
+// STYLE CONSTANTS
 // ─────────────────────────────────────────────────
 
 const DARK_BG = '#1a1a2e'
 const TEXT_PRIMARY = '#e0e0e0'
 const TEXT_SECONDARY = '#b0b0b0'
+const TEXT_MUTED = '#707070'
 const FONT = "'Courier New', Courier, monospace"
 
-function MorphComponent({ shape }: { shape: MorphShape }) {
+// ─────────────────────────────────────────────────
+// MORPH COMPONENT — Wrapped in track() to capture
+// signal reads (getEditingShapeId, getDetailLevel).
+// See CLAUDE.md "Key Learnings" section.
+// ─────────────────────────────────────────────────
+
+const MorphComponent = track(function MorphComponent({ shape }: { shape: MorphShape }) {
   const editor = useEditor()
   const level = getDetailLevel(editor)
   const phase = getPhaseFromLevel(level)
-  const { w, h, title, body } = shape.props
+  const isEditing = editor.getEditingShapeId() === shape.id
+  const { w, h } = shape.props
 
   // ── Phase 0: DOT ──────────────────────────────
   if (phase === MorphPhase.Dot) {
@@ -118,9 +149,18 @@ function MorphComponent({ shape }: { shape: MorphShape }) {
             width: w,
             height: h,
             borderRadius: '50%',
-            background: DARK_BG,
+            background: shape.props.color,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 700,
+            fontFamily: FONT,
           }}
-        />
+        >
+          {shape.props.name.charAt(0).toUpperCase()}
+        </div>
       </HTMLContainer>
     )
   }
@@ -134,27 +174,47 @@ function MorphComponent({ shape }: { shape: MorphShape }) {
             width: w,
             height: h,
             background: DARK_BG,
-            color: TEXT_PRIMARY,
-            fontFamily: FONT,
-            fontSize: '13px',
-            fontWeight: 700,
+            borderRadius: '4px',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 10px',
-            borderRadius: '4px',
             overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
             pointerEvents: 'all',
           }}
         >
-          {title}
+          {/* Trade color accent bar */}
+          <div
+            style={{
+              width: 4,
+              height: '100%',
+              background: shape.props.color,
+              flexShrink: 0,
+            }}
+          />
+          <div
+            style={{
+              color: TEXT_PRIMARY,
+              fontFamily: FONT,
+              fontSize: '13px',
+              fontWeight: 700,
+              padding: '0 10px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {shape.props.name}
+            {shape.props.company && (
+              <span style={{ color: TEXT_SECONDARY, fontWeight: 400 }}>
+                {' — '}{shape.props.company}
+              </span>
+            )}
+          </div>
         </div>
       </HTMLContainer>
     )
   }
 
-  // ── Phase 2: CARD ─────────────────────────────
+  // ── Phase 2: CARD (Business Card) ─────────────
   if (phase === MorphPhase.Card) {
     return (
       <HTMLContainer>
@@ -163,36 +223,75 @@ function MorphComponent({ shape }: { shape: MorphShape }) {
             width: w,
             height: h,
             background: DARK_BG,
-            color: TEXT_PRIMARY,
-            fontFamily: FONT,
-            padding: '16px',
             borderRadius: '8px',
             overflow: 'hidden',
             pointerEvents: 'all',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
+            fontFamily: FONT,
           }}
         >
-          <div style={{ fontSize: '14px', fontWeight: 700, flexShrink: 0 }}>
-            {title}
-          </div>
+          {/* Trade-colored header bar */}
           <div
             style={{
-              fontSize: '11px',
-              lineHeight: '1.5',
-              overflow: 'hidden',
-              color: TEXT_SECONDARY,
+              background: shape.props.color,
+              padding: '8px 12px',
+              flexShrink: 0,
             }}
           >
-            {body}
+            <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+              {shape.props.name}
+            </div>
+            {shape.props.company && (
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
+                {shape.props.company}
+              </div>
+            )}
+          </div>
+          {/* Body */}
+          <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {/* Trade pills */}
+            {shape.props.trades.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {shape.props.trades.map((trade) => {
+                  const tc = getTradeColor(trade)
+                  return (
+                    <span
+                      key={trade}
+                      style={{
+                        background: `${tc}33`,
+                        color: tc,
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                      }}
+                    >
+                      {trade}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+            {/* Areas */}
+            {shape.props.areas.length > 0 && (
+              <div style={{ fontSize: '11px', color: TEXT_SECONDARY }}>
+                {shape.props.areas.join(' · ')}
+              </div>
+            )}
+            {/* License */}
+            {shape.props.license && (
+              <div style={{ fontSize: '10px', color: TEXT_MUTED }}>
+                Lic: {shape.props.license}
+              </div>
+            )}
           </div>
         </div>
       </HTMLContainer>
     )
   }
 
-  // ── Phase 3: DOCUMENT ─────────────────────────
+  // ── Phase 3: FULL PROFILE ─────────────────────
   return (
     <HTMLContainer>
       <div
@@ -200,24 +299,216 @@ function MorphComponent({ shape }: { shape: MorphShape }) {
           width: w,
           height: h,
           background: DARK_BG,
-          color: TEXT_PRIMARY,
-          fontFamily: FONT,
-          padding: '32px',
           borderRadius: '8px',
-          overflow: 'auto',
+          overflow: 'hidden',
           pointerEvents: 'all',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          fontFamily: FONT,
         }}
       >
-        <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-          {title}
-        </h2>
-        <div style={{ fontSize: '13px', lineHeight: '1.7', color: TEXT_SECONDARY }}>
-          {body}
+        {/* Trade-colored header */}
+        <div
+          style={{
+            background: shape.props.color,
+            padding: '12px 16px',
+            flexShrink: 0,
+          }}
+        >
+          {isEditing ? (
+            <EditableInput
+              value={shape.props.name}
+              onChange={(val) =>
+                editor.updateShapes([{ id: shape.id, type: MORPH_TYPE, props: { name: val } }])
+              }
+              style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}
+            />
+          ) : (
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
+              {shape.props.name}
+            </div>
+          )}
+          {isEditing ? (
+            <EditableInput
+              value={shape.props.company}
+              placeholder="Company"
+              onChange={(val) =>
+                editor.updateShapes([{ id: shape.id, type: MORPH_TYPE, props: { company: val } }])
+              }
+              style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}
+            />
+          ) : (
+            shape.props.company && (
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
+                {shape.props.company}
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Body content */}
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'auto' }}>
+          {/* Phone row — tappable tel: link (interactive-shape pattern) */}
+          {(shape.props.phone || isEditing) && (
+            <div>
+              {isEditing ? (
+                <EditableInput
+                  value={shape.props.phone}
+                  placeholder="Phone number"
+                  onChange={(val) =>
+                    editor.updateShapes([{ id: shape.id, type: MORPH_TYPE, props: { phone: val } }])
+                  }
+                  style={{ fontSize: '16px', fontWeight: 600, color: '#60a5fa' }}
+                />
+              ) : (
+                <a
+                  href={`tel:${shape.props.phone.replace(/[^0-9+]/g, '')}`}
+                  style={{
+                    pointerEvents: 'all',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    minHeight: '44px',
+                    color: '#60a5fa',
+                    textDecoration: 'none',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    fontFamily: FONT,
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                >
+                  {shape.props.phone}
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.1)' }} />
+
+          {/* Trade pills */}
+          {(shape.props.trades.length > 0 || isEditing) && (
+            isEditing ? (
+              <EditableInput
+                value={shape.props.trades.join(', ')}
+                placeholder="Trades (comma-separated)"
+                onChange={(val) =>
+                  editor.updateShapes([{
+                    id: shape.id,
+                    type: MORPH_TYPE,
+                    props: { trades: val.split(',').map((s) => s.trim()).filter(Boolean) },
+                  }])
+                }
+                style={{ fontSize: '11px', color: TEXT_SECONDARY }}
+              />
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {shape.props.trades.map((trade) => {
+                  const tc = getTradeColor(trade)
+                  return (
+                    <span
+                      key={trade}
+                      style={{
+                        background: `${tc}33`,
+                        color: tc,
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        padding: '2px 10px',
+                        borderRadius: '10px',
+                      }}
+                    >
+                      {trade}
+                    </span>
+                  )
+                })}
+              </div>
+            )
+          )}
+
+          {/* Areas */}
+          {(shape.props.areas.length > 0 || isEditing) && (
+            isEditing ? (
+              <EditableInput
+                value={shape.props.areas.join(', ')}
+                placeholder="Areas (comma-separated)"
+                onChange={(val) =>
+                  editor.updateShapes([{
+                    id: shape.id,
+                    type: MORPH_TYPE,
+                    props: { areas: val.split(',').map((s) => s.trim()).filter(Boolean) },
+                  }])
+                }
+                style={{ fontSize: '11px', color: TEXT_SECONDARY }}
+              />
+            ) : (
+              <div style={{ fontSize: '12px', color: TEXT_SECONDARY }}>
+                {shape.props.areas.join(' · ')}
+              </div>
+            )
+          )}
+
+          {/* License */}
+          {(shape.props.license || isEditing) && (
+            isEditing ? (
+              <EditableInput
+                value={shape.props.license}
+                placeholder="License number"
+                onChange={(val) =>
+                  editor.updateShapes([{ id: shape.id, type: MORPH_TYPE, props: { license: val } }])
+                }
+                style={{ fontSize: '11px', color: TEXT_MUTED }}
+              />
+            ) : (
+              <div style={{ fontSize: '11px', color: TEXT_MUTED }}>
+                Lic: {shape.props.license}
+              </div>
+            )
+          )}
         </div>
       </div>
     </HTMLContainer>
+  )
+})
+
+// ─────────────────────────────────────────────────
+// EDITABLE INPUT — Inline input for edit mode.
+// Uses stopPropagation per interactive-shape example
+// to prevent tldraw from intercepting pointer events.
+// ─────────────────────────────────────────────────
+
+function EditableInput({
+  value,
+  placeholder,
+  onChange,
+  style,
+}: {
+  value: string
+  placeholder?: string
+  onChange: (val: string) => void
+  style?: React.CSSProperties
+}) {
+  return (
+    <input
+      value={value}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.currentTarget.value)}
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      style={{
+        pointerEvents: 'all',
+        background: 'rgba(255,255,255,0.1)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        borderRadius: '4px',
+        padding: '4px 8px',
+        fontFamily: FONT,
+        width: '100%',
+        boxSizing: 'border-box',
+        outline: 'none',
+        ...style,
+      }}
+    />
   )
 }

@@ -6,11 +6,11 @@ import { MorphPhase, PhaseConfig } from './morph-types'
 // Each phase defines a fixed shape size. Transitions
 // are discrete snaps — no interpolation.
 //
-// Dimensions derived from reference screenshots:
-//   level0.png:  ~30x30 circles
-//   level20.png: ~200x32 label rects
-//   level80.png: ~400x300 card rects
-//   level100.png: ~800x600 document rects
+// ProNet dimensions — contractor business cards:
+//   Dot:      30x30   (trade-colored initial circle)
+//   Label:    240x32  (name + company strip)
+//   Card:     350x200 (business card ratio ~1.75:1)
+//   Document: 420x320 (full profile with phone link)
 // ─────────────────────────────────────────────────
 
 export const PHASE_CONFIGS: Record<MorphPhase, PhaseConfig> = {
@@ -22,20 +22,20 @@ export const PHASE_CONFIGS: Record<MorphPhase, PhaseConfig> = {
   },
   [MorphPhase.Label]: {
     phase: MorphPhase.Label,
-    w: 200,
+    w: 240,
     h: 32,
     borderRadius: 4,
   },
   [MorphPhase.Card]: {
     phase: MorphPhase.Card,
-    w: 400,
-    h: 300,
+    w: 350,
+    h: 200,
     borderRadius: 8,
   },
   [MorphPhase.Document]: {
     phase: MorphPhase.Document,
-    w: 800,
-    h: 600,
+    w: 420,
+    h: 320,
     borderRadius: 8,
   },
 }

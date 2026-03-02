@@ -51,7 +51,7 @@ function CustomToolbar() {
 }
 
 // ─────────────────────────────────────────────────
-// APP
+// APP — ProNet Contractor Relationship Map
 // ─────────────────────────────────────────────────
 
 export default function App() {
@@ -99,17 +99,28 @@ export default function App() {
     // Create the graph layout manager
     graphRef.current = new GraphLayout(editor)
 
-    // Create morph shapes for each node
+    // Clear stale shapes from previous schema (title/body → name/company/etc)
+    const stale = editor.getCurrentPageShapes().filter((s) => s.type === MORPH_TYPE || s.type === 'arrow')
+    if (stale.length > 0) {
+      editor.deleteShapes(stale.map((s) => s.id))
+    }
+
+    // Create morph shapes for each contractor node
     const shapeCreations = SAMPLE_NODES.map((node) => ({
       id: createShapeId(node.id),
       type: MORPH_TYPE as const,
       x: node.x,
       y: node.y,
       props: {
-        w: 200,
+        w: 240,
         h: 32,
-        title: node.title,
-        body: node.body,
+        name: node.name,
+        company: node.company,
+        license: node.license,
+        trades: node.trades,
+        areas: node.areas,
+        phone: node.phone,
+        color: node.color,
       },
     }))
 
