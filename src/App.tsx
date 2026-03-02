@@ -12,6 +12,7 @@ import {
   useEditor,
 } from 'tldraw'
 import 'tldraw/tldraw.css'
+import './app.css'
 
 import { MorphShapeUtil } from './morph/MorphShapeUtil'
 import { MorphTool } from './morph/MorphTool'
@@ -186,7 +187,7 @@ export default function App() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+      fontFamily: 'var(--tl-font-sans)',
     }}>
       <Tldraw
         shapeUtils={customShapeUtils}

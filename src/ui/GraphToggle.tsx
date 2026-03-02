@@ -31,7 +31,7 @@ export const GraphToggle = track(function GraphToggle({ active, onToggle }: Grap
           border: 'none',
           borderRadius: 6,
           padding: '6px 16px',
-          fontFamily: "var(--tl-font-sans, 'Inter', 'Helvetica', 'Arial', sans-serif)",
+          fontFamily: 'var(--tl-font-sans)',
           fontSize: 13,
           fontWeight: 700,
           cursor: 'pointer',

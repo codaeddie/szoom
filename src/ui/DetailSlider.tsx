@@ -43,7 +43,7 @@ export const DetailSlider = track(function DetailSlider({ onLevelChange }: Detai
         background: '#1a1a2e',
         padding: '6px 14px',
         borderRadius: 8,
-        fontFamily: "'Courier New', monospace",
+        fontFamily: 'var(--tl-font-mono)',
         fontSize: 14,
         color: '#e0e0e0',
         zIndex: 99999,

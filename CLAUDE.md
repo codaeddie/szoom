@@ -313,6 +313,17 @@ szoom/
 
 - **Wrap shape components in `track()` to capture signal reads.** If `MorphComponent` reads editor signals like `getEditingShapeId()` or `getDetailLevel()`, those are signia signal reads. tldraw's shape component system re-renders when shape *props* change, but external signals (editing state, document meta) require `track()` to be captured. Pattern: `const MorphComponent = track(function MorphComponent({ shape }) { ... })`. The workflow starter kit uses `useValue()` for similar external-state reads. Without `track()`, editing state changes won't trigger re-renders.
 
+- **Use tldraw's bundled fonts, not system fonts.** tldraw bundles 4 fonts as CSS vars: `--tl-font-draw` (Shantell Sans), `--tl-font-sans` (IBM Plex Sans), `--tl-font-serif` (IBM Plex Serif), `--tl-font-mono` (IBM Plex Mono). Use these everywhere — no Courier New, no Inter, no system stacks. For shape content use the vars directly in inline styles (`fontFamily: 'var(--tl-font-sans)'`).
+
+- **Fix tldraw UI font: set font-family on `.tl-container`.** tldraw's `.tl-container` sets NO `font-family`, and some UI elements (page menu, edit menu) use `var(--font-body)` which is referenced but NEVER defined in `tldraw.css`. Both fall back to the browser default (Times New Roman). The official fix (per tldraw installation docs) is a CSS override on `.tl-container`. Create `src/app.css`, import it after `tldraw.css`:
+  ```css
+  .tl-container {
+    --font-body: var(--tl-font-sans);
+    font-family: var(--tl-font-sans);
+  }
+  ```
+  This is the documented pattern from https://tldraw.dev/installation — targeting `.tl-container` is how tldraw expects UI font customization. Apply this fix on all branches.
+
 ### Backlog (deferred, not blocked):
 
 - **Camera lock at 73%** — cosmetic polish, not functionally needed. Would use `setCameraOptions({ isLocked: true })` + `setCamera({ z: 0.73 })`

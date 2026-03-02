@@ -125,7 +125,8 @@ const DARK_BG = '#1a1a2e'
 const TEXT_PRIMARY = '#e0e0e0'
 const TEXT_SECONDARY = '#b0b0b0'
 const TEXT_MUTED = '#707070'
-const FONT = "'Courier New', Courier, monospace"
+const FONT_SANS = 'var(--tl-font-sans)'
+const FONT_MONO = 'var(--tl-font-mono)'
 
 // ─────────────────────────────────────────────────
 // MORPH COMPONENT — Wrapped in track() to capture
@@ -156,7 +157,7 @@ const MorphComponent = track(function MorphComponent({ shape }: { shape: MorphSh
             color: '#ffffff',
             fontSize: '14px',
             fontWeight: 700,
-            fontFamily: FONT,
+            fontFamily: FONT_SANS,
           }}
         >
           {shape.props.name.charAt(0).toUpperCase()}
@@ -193,7 +194,7 @@ const MorphComponent = track(function MorphComponent({ shape }: { shape: MorphSh
           <div
             style={{
               color: TEXT_PRIMARY,
-              fontFamily: FONT,
+              fontFamily: FONT_SANS,
               fontSize: '13px',
               fontWeight: 700,
               padding: '0 10px',
@@ -228,7 +229,7 @@ const MorphComponent = track(function MorphComponent({ shape }: { shape: MorphSh
             pointerEvents: 'all',
             display: 'flex',
             flexDirection: 'column',
-            fontFamily: FONT,
+            fontFamily: FONT_SANS,
           }}
         >
           {/* Trade-colored header bar */}
@@ -304,7 +305,7 @@ const MorphComponent = track(function MorphComponent({ shape }: { shape: MorphSh
           pointerEvents: 'all',
           display: 'flex',
           flexDirection: 'column',
-          fontFamily: FONT,
+          fontFamily: FONT_SANS,
         }}
       >
         {/* Trade-colored header */}
@@ -373,7 +374,7 @@ const MorphComponent = track(function MorphComponent({ shape }: { shape: MorphSh
                     textDecoration: 'none',
                     fontSize: '16px',
                     fontWeight: 600,
-                    fontFamily: FONT,
+                    fontFamily: FONT_MONO,
                   }}
                   onPointerDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
@@ -503,7 +504,7 @@ function EditableInput({
         border: '1px solid rgba(255,255,255,0.2)',
         borderRadius: '4px',
         padding: '4px 8px',
-        fontFamily: FONT,
+        fontFamily: FONT_SANS,
         width: '100%',
         boxSizing: 'border-box',
         outline: 'none',
