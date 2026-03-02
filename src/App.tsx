@@ -12,6 +12,7 @@ import {
   useEditor,
 } from 'tldraw'
 import 'tldraw/tldraw.css'
+import './app.css'
 
 import { MorphShapeUtil } from './morph/MorphShapeUtil'
 import { MorphTool } from './morph/MorphTool'
