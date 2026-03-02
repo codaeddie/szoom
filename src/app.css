@@ -1,0 +1,16 @@
+/*
+ * Font fix for tldraw UI components.
+ *
+ * tldraw's .tl-container sets no font-family, and some
+ * UI elements (page menu, minimap) use var(--font-body)
+ * which is never defined. Both fall back to the browser
+ * default (usually Times New Roman).
+ *
+ * This sets tldraw's own sans font as the base so all
+ * inherit chains and --font-body references resolve to it.
+ */
+
+.tl-container {
+  --font-body: var(--tl-font-sans);
+  font-family: var(--tl-font-sans);
+}
